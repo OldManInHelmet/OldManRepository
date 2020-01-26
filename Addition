@@ -1,0 +1,97 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace CalculatorEFSOL
+{
+    class Addition
+    {
+        private double firstNumber;
+        private double secondNumber;
+        string localSpace = "";
+
+        public Addition(double firstNumber, double secondNumber)
+        {
+            this.firstNumber = firstNumber;
+            this.secondNumber = secondNumber;
+        }
+        void AddSpaces(int spacesNumber, ref string space)
+        {
+            for (int i = 0; i <= spacesNumber; i++)
+            {
+                space += " ";
+            }
+        }
+        void ClearSpaces(ref string space)
+        {
+            space = "";
+        }
+        void AddLine(ref string space) 
+        {
+            for (int i = 0; i <= (firstNumber+secondNumber).ToString().Length; i++)
+            {
+                space += "-";
+            }
+        }
+        public void AddNumbers()
+        {
+            int fractionFirst = 0;
+            int fractionSecond = 0;
+            string firstNumberStr = firstNumber.ToString();
+            string secondNumberStr = secondNumber.ToString();
+            int spacesCount = 0;
+            double result;
+            string[] tempFirstNumber = firstNumber.ToString().Split(',', '.');
+            string[] tempSecondNumber = secondNumber.ToString().Split(',', '.');
+            if(tempFirstNumber.Length!=1)
+                fractionFirst = tempFirstNumber[1].Length;
+            if(tempSecondNumber.Length!=1)
+                fractionSecond = tempSecondNumber[1].Length;
+            if (tempFirstNumber.Length == 1 && tempSecondNumber.Length!=1)
+            {
+                firstNumberStr += ",0";
+                fractionFirst += 1;
+            }
+            if (tempSecondNumber.Length == 1 && tempFirstNumber.Length != 1)
+            {
+                secondNumberStr += ",0";
+                fractionSecond += 1;
+            }
+
+            if (fractionFirst > fractionSecond)
+            {
+                for (int i = 0; i < fractionFirst - fractionSecond; i++)
+                {
+                    secondNumberStr += "0";
+                    fractionSecond++;
+                }
+            }
+            else if (fractionFirst < fractionSecond)
+            {
+                for (int i = 0; i < fractionSecond - fractionFirst; i++)
+                {
+                    firstNumberStr += "0";
+                    fractionFirst++;
+                }
+            }
+            //Console.WriteLine($"{firstNumberStr}, {secondNumberStr}");
+            result = Math.Round(firstNumber + secondNumber, fractionFirst);
+
+            AddSpaces(result.ToString().Length-firstNumberStr.Length, ref localSpace);
+            Console.Write(localSpace);
+            Console.WriteLine(firstNumberStr);
+            ClearSpaces(ref localSpace);
+            Console.WriteLine("+");
+            AddSpaces(result.ToString().Length - secondNumberStr.Length, ref localSpace);
+            Console.Write(localSpace);
+            Console.WriteLine(secondNumberStr);
+            ClearSpaces(ref localSpace);
+            AddLine(ref localSpace);
+            Console.WriteLine(localSpace);
+            Console.Write(" ");
+            Console.WriteLine(result); 
+
+        }
+
+    }
+}
