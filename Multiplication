@@ -1,0 +1,148 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace CalculatorEFSOL
+{
+    class Multiplication
+    {
+        static double firstNumber;
+        static double secondNumber;
+        static long firstNumberInt;
+        static long secondNumberInt;
+        static long fNumberFraction;
+        static long sNumberFraction;
+        public double SetFirstValue 
+        {
+            get 
+            {
+                return firstNumber;
+            }
+            set
+            {
+                firstNumber = value;
+            }
+        }
+        public double SetSecondValue
+        {
+            get
+            {
+                return secondNumber;
+            }
+            set
+            {
+                secondNumber = value;
+            }
+        }
+        public static void ChangePlaces(ref double firstNumber, ref double secondNumber)
+        {
+            if (firstNumber.ToString().Length < secondNumber.ToString().Length)
+            {
+                double temporary = firstNumber;
+                firstNumber = secondNumber;
+                secondNumber = temporary;
+            }
+        }
+
+
+        public static void ConvertForMultiplication(double firstN, double secondN) //Приведение при умножении
+        {
+            string[] tempFirstNumber = firstN.ToString().Split(',', '.');
+            string[] tempSecondNumber = secondN.ToString().Split(',', '.');
+            if (tempFirstNumber.Length == 2)
+            {
+                firstN *= Math.Pow(10, tempFirstNumber[1].Length);
+            }
+            if (tempSecondNumber.Length == 2)
+            {
+                secondN *= Math.Pow(10, tempSecondNumber[1].Length);
+            }
+            Multiplication.firstNumberInt = Convert.ToInt64(firstN);
+            Multiplication.secondNumberInt = Convert.ToInt64(secondN);
+        }
+
+        static double result;
+        static long intResult;
+
+        public static double SetResult(ref double fNumber, ref double sNumber) 
+        {
+            result = fNumber * sNumber;
+            return result;
+        }
+
+        public double GetResult 
+        {
+            get 
+            {
+                return result;
+            }
+           
+        }
+        public long GetAnotherRes
+        {
+            get 
+            {
+                return intResult;
+            }
+        }
+        static void GetIntResult()
+        {
+            intResult = firstNumberInt * secondNumberInt;
+        }
+
+        public static void GetSystem()
+        {
+            int globalSpacesCount = 0;
+            int localSpacesCount;
+            long tempStr; //Строка для сложения
+            StringBuilder space = new StringBuilder(0);
+            Multiplication.GetIntResult();
+            localSpacesCount = intResult.ToString().Length - firstNumberInt.ToString().Length;
+            void AddSpaces() 
+            {
+                for (int i = 0; i < localSpacesCount; i++)
+                {
+                    space.AppendFormat(" ");
+                }
+            }
+            void AddGrounds()
+            {
+                for (int i = 0; i < intResult.ToString().Length; i++)
+                {
+                    space.AppendFormat("-");
+                }
+            }
+            void ClearSpaces()
+            {
+                space.Remove(0, space.Length);
+            }
+            AddSpaces();
+            Console.Write(space);
+            Console.WriteLine(firstNumberInt);
+            ClearSpaces();
+            localSpacesCount = intResult.ToString().Length - secondNumberInt.ToString().Length;
+            //Console.WriteLine("*");
+            AddSpaces();
+            Console.Write(space);
+            Console.WriteLine(secondNumberInt);
+            ClearSpaces();
+            AddGrounds();
+            Console.WriteLine(space);
+            for (int i = secondNumberInt.ToString().Length-1; i>=0; i--) //Складываемые строки 
+            {
+                ClearSpaces();
+                tempStr = Convert.ToInt64(Convert.ToString(secondNumberInt.ToString()[i])) * Multiplication.firstNumberInt;
+                localSpacesCount = intResult.ToString().Length - tempStr.ToString().Length + globalSpacesCount;
+                AddSpaces();
+                Console.Write(space);
+                Console.WriteLine(tempStr);
+                globalSpacesCount--;
+            }
+            ClearSpaces();
+            AddGrounds();
+            Console.WriteLine(space);
+            ClearSpaces();
+            Console.WriteLine(intResult);
+        }
+    }
+}
