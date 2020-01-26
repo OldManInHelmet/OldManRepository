@@ -40,7 +40,7 @@ namespace CalculatorEFSOL
             string firstNumberStr = firstNumber.ToString();
             string secondNumberStr = secondNumber.ToString();
             int spacesCount = 0;
-            double result;
+            double result = 0;
             string[] tempFirstNumber = firstNumber.ToString().Split(',', '.');
             string[] tempSecondNumber = secondNumber.ToString().Split(',', '.');
             if(tempFirstNumber.Length!=1)
@@ -60,22 +60,22 @@ namespace CalculatorEFSOL
 
             if (fractionFirst > fractionSecond)
             {
-                for (int i = 0; i <= fractionFirst - fractionSecond; i++)
+                for (int i = 0; i < fractionFirst - fractionSecond; i++)
                 {
                     secondNumberStr += "0";
-                    fractionSecond++;
                 }
+                result = Math.Round(firstNumber + secondNumber, fractionFirst);
             }
             else if (fractionFirst < fractionSecond)
             {
-                for (int i = 0; i <= fractionSecond - fractionFirst; i++)
+                for (int i = 0; i < fractionSecond - fractionFirst; i++)
                 {
                     firstNumberStr += "0";
-                    fractionFirst++;
                 }
+                result = Math.Round(firstNumber + secondNumber, fractionSecond);
             }
             //Console.WriteLine($"{firstNumberStr}, {secondNumberStr}");
-            result = Math.Round(firstNumber + secondNumber, fractionFirst);
+            
 
             AddSpaces(result.ToString().Length-firstNumberStr.Length, ref localSpace);
             Console.Write(localSpace);
@@ -95,4 +95,5 @@ namespace CalculatorEFSOL
 
     }
 }
+
 
