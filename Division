@@ -1,0 +1,307 @@
+using System;
+using System.Text;
+//using System.Collections.Generic;
+//using System.Text;
+
+namespace CalculatorEFSOL
+{
+    class Converter
+    {
+        public static void ConvertToIntegers(ref double firstN, ref double secondN) //Приведение при делении в столбик
+        {
+            string[] tempFirstNumber = firstN.ToString().Split(',', '.');
+            string[] tempSecondNumber = secondN.ToString().Split(',', '.');
+            if (tempFirstNumber.Length == 1 && tempSecondNumber.Length != 1)
+            {
+                firstN *= Math.Pow(10, tempSecondNumber[1].Length);
+                secondN *= Math.Pow(10, tempSecondNumber[1].Length);
+            }
+            else if (tempFirstNumber.Length != 1 && tempSecondNumber.Length == 1)
+            {
+                firstN *= Math.Pow(10, tempFirstNumber[1].Length);
+                secondN *= Math.Pow(10, tempFirstNumber[1].Length);
+            }
+            else if (tempFirstNumber.Length != 1 && tempSecondNumber.Length != 1)
+            {
+                if (tempFirstNumber[1].Length > tempSecondNumber[1].Length)
+                {
+                    firstN *= Math.Pow(10, tempFirstNumber[1].Length);
+                    secondN *= Math.Pow(10, tempFirstNumber[1].Length);
+                }
+                else
+                {
+                    firstN *= Math.Pow(10, tempSecondNumber[1].Length);
+                    secondN *= Math.Pow(10, tempSecondNumber[1].Length);
+                }
+            }
+            else { }
+        }
+    }
+    class Fraction //сокращение дроби для нахождения ПРЕДпериода и периода (Если дробь периодическая)
+    {
+        public int numerator; //Делимое
+        public int denominator; //Делитель
+        public int numeratorNOD;
+        public int denominatorNOD;
+        public int quatientInt; //Целая часть частного
+        public int preperiodLength; //Длина предпериода
+        public string prePeriod = "";
+        public string period = "";
+        StringBuilder resultStr = new StringBuilder();
+        StringBuilder resultStrWithoutSigns = new StringBuilder();
+        public static Fraction ToReduce(Fraction fraction) //возвращает объект Fraction, значения полей которого сокращены с помощью НОД
+        {
+            int nod = Nod(fraction.numerator, fraction.denominator);
+            if (nod != 0)
+            {
+                fraction.numeratorNOD = fraction.numerator / nod;
+                fraction.denominatorNOD = fraction.denominator / nod;
+            }
+            return fraction;
+        }
+
+        static int Nod(int n, int d) //Поиск НОД. (=> все простые множители исключаются)
+        {
+            int temp;
+            n = Math.Abs(n);
+            d = Math.Abs(d);
+            while (d != 0 && n != 0)
+            {
+                if (n % d > 0)
+                {
+                    temp = n;
+                    n = d;
+                    d = temp % d;
+                }
+                else break;
+            }
+            if (d != 0 && n != 0) return d;
+            else return 0;
+        }
+        public static Fraction GetIntNumber(Fraction fraction) //Возвращает целочисленную часть от деления (например, 50/28 = 1)
+        {
+            fraction.quatientInt = fraction.numeratorNOD / fraction.denominatorNOD;
+            return fraction;
+        }
+        public static Fraction FindRest(Fraction fraction) //Вычитание целой части от деления (Находим остаток, меньший делителя)
+        {
+            fraction.numeratorNOD -= fraction.denominatorNOD * fraction.quatientInt;
+            return fraction;
+        }
+
+        public int temporaryCount2;
+        public int temporaryCount5;
+        public static Fraction GetPreperiodLength(Fraction fraction) //Возвращает длину предпериода, части дроби до периодической
+        {
+            fraction.temporaryCount2 = 0;
+            fraction.temporaryCount5 = 0;
+            int tempDenominator = fraction.denominatorNOD;
+            while (tempDenominator % 2 == 0)
+            {
+                tempDenominator /= 2;
+                fraction.temporaryCount2++;
+            }
+            while (tempDenominator % 5 == 0)
+            {
+                tempDenominator /= 5;
+                fraction.temporaryCount5++;
+            }
+            if (fraction.temporaryCount2 > fraction.temporaryCount5)
+            {
+                fraction.preperiodLength = fraction.temporaryCount2;
+            }
+            else
+            {
+                fraction.preperiodLength = fraction.temporaryCount5;
+            }
+            return fraction;
+        }
+        public static Fraction GetPreperiodString(Fraction fraction) //Возвращает предпериодическую часть дроби
+        {
+            StringBuilder prePeriod = new StringBuilder(0); //строка, содержащая предпериод
+                                                            //int prePeriodNumeric; //Числовое значение ПРЕДпериода
+
+            fraction.numeratorNOD -= fraction.denominatorNOD * fraction.quatientInt;
+            for (int i = 0; i < fraction.preperiodLength; i++)
+            {
+                if (fraction.numeratorNOD < fraction.denominatorNOD)
+                {
+                    fraction.numeratorNOD *= 10;
+                }
+                prePeriod.AppendFormat(Convert.ToString(fraction.numeratorNOD / fraction.denominatorNOD));
+                fraction.numeratorNOD = fraction.numeratorNOD % fraction.denominatorNOD;
+            }
+            //prePeriodNumeric = Convert.ToInt32(prePeriod.ToString());
+            if (prePeriod.Length == 0)
+            {
+                prePeriod.Clear();
+            }
+            else
+                fraction.prePeriod = prePeriod.ToString();
+            return fraction;
+        }
+        public static Fraction GetPeriod(Fraction fraction) //Возвращает периодическую часть дроби
+        {
+            StringBuilder period = new StringBuilder(0);
+            //int periodNumeric;
+            int tempDenominator = 0;
+            if (fraction.temporaryCount2 != 0 && fraction.temporaryCount5 != 0)
+            {
+                tempDenominator = Convert.ToInt32(fraction.denominatorNOD / ((Math.Pow(2, (fraction.temporaryCount2 - 1))) * (Math.Pow(5, (fraction.temporaryCount5 - 1)))));
+            }
+            else if (fraction.temporaryCount2 == 0 && fraction.temporaryCount5 != 0)
+            {
+                tempDenominator = Convert.ToInt32(fraction.denominatorNOD / (Math.Pow(5, (fraction.temporaryCount5 - 1))));
+            }
+            else if (fraction.temporaryCount2 != 0 && fraction.temporaryCount5 == 0)
+            {
+                tempDenominator = Convert.ToInt32(fraction.denominatorNOD / (Math.Pow(2, (fraction.temporaryCount2 - 1))));
+            }
+            else
+            {
+                tempDenominator = fraction.denominatorNOD;
+            }
+            int checker = 0;
+            do
+            {
+                if (fraction.numeratorNOD != 0)
+                {
+                    checker += 9;
+                    if (fraction.numeratorNOD < fraction.denominatorNOD)
+                    {
+                        fraction.numeratorNOD *= 10;
+                    }
+                    period.AppendFormat(Convert.ToString(fraction.numeratorNOD / fraction.denominatorNOD));
+                    fraction.numeratorNOD = fraction.numeratorNOD % fraction.denominatorNOD;
+                    checker = (checker % tempDenominator) * 10;
+                }
+            } while (checker % tempDenominator != 0);
+            if (period.Length == 0)
+            { }
+            else
+            {
+                fraction.period = period.ToString();
+            }
+            return fraction;
+        }
+        public static Fraction GetResultStr(Fraction fraction)
+        {
+            if (fraction.period.Length > 10) //Создание строки формата целаяЧасть,предПериод(период) и дублирующей ее строки, но без знаков
+            {
+                fraction.resultStr.AppendFormat(fraction.quatientInt.ToString()).AppendFormat(",").AppendFormat(fraction.prePeriod.ToString());
+                fraction.period = fraction.period.Remove(10);
+                fraction.resultStr.AppendFormat("(").AppendFormat(fraction.period.ToString()).AppendFormat("...)");
+                fraction.resultStrWithoutSigns.AppendFormat(fraction.quatientInt.ToString()).AppendFormat(fraction.prePeriod.ToString()).AppendFormat(fraction.period.ToString());//строка результата без символов (Только цифры)
+            }
+            else if (fraction.period.Length == 0 && fraction.prePeriod.Length != 0)
+            {
+                fraction.resultStr.AppendFormat(fraction.quatientInt.ToString()).AppendFormat(",").AppendFormat(fraction.prePeriod.ToString());
+                fraction.resultStrWithoutSigns.AppendFormat(fraction.quatientInt.ToString()).AppendFormat(fraction.prePeriod.ToString());
+            }
+            else if (fraction.period.Length != 0 && fraction.prePeriod.Length == 0)
+            {
+                fraction.resultStr.AppendFormat(fraction.quatientInt.ToString()).AppendFormat(",").AppendFormat("(").AppendFormat(fraction.period.ToString()).AppendFormat(")");
+                fraction.resultStrWithoutSigns.AppendFormat(fraction.quatientInt.ToString()).AppendFormat(fraction.period.ToString());
+            }
+            else if (fraction.period.Length == 0 && fraction.prePeriod.Length == 0)
+            {
+                fraction.resultStr.AppendFormat(fraction.quatientInt.ToString());
+                fraction.resultStrWithoutSigns.AppendFormat(fraction.quatientInt.ToString());
+            }
+            else
+            {
+                fraction.resultStr.AppendFormat(fraction.quatientInt.ToString()).AppendFormat(",").AppendFormat(fraction.prePeriod.ToString());
+                fraction.resultStr.AppendFormat("(").AppendFormat(fraction.period.ToString()).AppendFormat(")");
+                fraction.resultStrWithoutSigns.AppendFormat(fraction.quatientInt.ToString()).AppendFormat(fraction.prePeriod.ToString()).AppendFormat(fraction.period.ToString());
+            }
+            return fraction;
+        }
+
+        public static void Divide(Fraction fraction)//Деление с вычитанием. Все, что выше - чтобы найти периодическую дробь.
+        {
+            Console.WriteLine($" { fraction.numerator}|{fraction.denominator}");//Вывод делимого и делителя
+            //Console.SetCursorPosition(0, 3);
+            for (int i = 0; i < fraction.numerator.ToString().Length + 1; i++)
+            {
+                Console.Write(" ");
+            }
+            Console.WriteLine($"|{fraction.resultStr}");
+
+            StringBuilder numeratorStr = new StringBuilder(0);
+            StringBuilder denominatorStr = new StringBuilder(0);
+
+            StringBuilder tempNumeratorStr = new StringBuilder(0); //Строка для уменьшаемого (добавляем по 1 символу, пока не больше делителя!)
+            int tempNumerator = 0;
+            int tempSubtrahend;
+            //Console.WriteLine(fraction.denominator);
+            numeratorStr.AppendFormat(fraction.numerator.ToString());
+            denominatorStr.AppendFormat(fraction.denominator.ToString());
+            void TempNumeratorBigger()
+            {
+                int checker = 0;
+                int localSpacesCount = 0; //Пробелы при 1 вычитании 
+                int globalSpacesCount = 0; //Пробелы во всем делении (!)
+                StringBuilder space = new StringBuilder(0);
+                do {
+                    if (tempNumerator > Convert.ToInt32(Convert.ToString(denominatorStr)))
+                    {
+                        tempSubtrahend = tempNumerator / Convert.ToInt32(Convert.ToString(denominatorStr)) * Convert.ToInt32(Convert.ToString(denominatorStr)); //делим часть от числителя на знаменатель НАЦЕЛО, => получаем цел. от деления, домножаем на делитель - получаем временное вычитаемое
+                        space.Remove(0, space.Length);
+                        for (int i = 0; i < globalSpacesCount; i++)//Пробелы для "Лесенки"
+                        {
+                            space.AppendFormat(" "); 
+                        }
+                        if (space.Length == 0) 
+                        { 
+                            space.AppendFormat(" ");//чтобы при 1 вычитании поместился знак "-"
+                            globalSpacesCount++;
+                        }
+                        
+                        Console.Write(space);
+                        Console.WriteLine(tempNumerator); //Выведем уменьшаемое на консоль
+                        if (checker != fraction.period.Length + fraction.prePeriod.Length + 2)
+                        {
+                            if (tempNumerator.ToString().Length > tempSubtrahend.ToString().Length)
+                            {
+                                space.AppendFormat(" ");
+                            }
+
+                            space.Remove(0, 1);
+                            space.AppendFormat("-"); //Добавим знак перед вычитаемым
+                            Console.Write(space);
+                            Console.WriteLine(tempSubtrahend); //Выведем вычитаемое на консоль
+                        }
+                        if (checker == fraction.period.Length + fraction.prePeriod.Length + 2 && checker<10+fraction.prePeriod.Length)
+                        {
+                            Console.WriteLine($"\nТак как число {tempNumerator} повторилось, дробь периодическая.");
+                        }
+                        localSpacesCount = tempNumerator.ToString().Length; //Сначала в количество пробелов запишем длину части делимого, из которой вычитаем.
+                        tempNumerator -= tempSubtrahend; //Вычитаем, получаем некий ответ
+                        localSpacesCount -= tempNumerator.ToString().Length; //После того, как получили ответ, находим разность между количеством симв. в уменьшаемом и в ответе
+                        globalSpacesCount += localSpacesCount; //Глобальное число пробелов увеличиваем
+
+                        tempNumeratorStr.Remove(0, tempNumeratorStr.Length); //Очистим временный числитель для того, чтобы перезаписать основной!
+                        tempNumeratorStr.AppendFormat(Convert.ToString(tempNumerator)); //Перезаписали основной числитель
+                        tempNumeratorStr.AppendFormat(Convert.ToString(numeratorStr)); //получаем новое делимое (В tempNumeratorStr после предыдущей строки будет результат вычитания!!!!!)
+                        numeratorStr.Remove(0, numeratorStr.Length); //Очистим числитель для перезаписи!
+                        numeratorStr.AppendFormat(Convert.ToString(tempNumeratorStr)); //Новое делимое получено, можно очистить временное делимое
+                        tempNumeratorStr.Remove(0, tempNumeratorStr.Length);
+                    }
+                    else
+                    {
+                        tempNumeratorStr.AppendFormat(Convert.ToString(numeratorStr[0])); //Добавляем знак в строку врем. уменьшаемого (в часть от делителя)
+                        tempNumerator = Convert.ToInt32(Convert.ToString(tempNumeratorStr));
+                        numeratorStr.Remove(0, 1);
+                        //Console.WriteLine(numeratorStr);
+                        if (numeratorStr.Length == 0)
+                        {
+                            numeratorStr.AppendFormat(Convert.ToString('0'));
+                            checker++;
+                        }
+                    }
+                } while (checker<=fraction.period.Length+fraction.prePeriod.Length+2);
+            }
+            TempNumeratorBigger();
+        }
+    }
+}
