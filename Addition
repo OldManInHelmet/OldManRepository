@@ -74,6 +74,10 @@ namespace CalculatorEFSOL
                 }
                 result = Math.Round(firstNumber + secondNumber, fractionSecond);
             }
+            else 
+            {
+                result = Math.Round(firstNumber - secondNumber);
+            }
             //Console.WriteLine($"{firstNumberStr}, {secondNumberStr}");
             
 
@@ -95,5 +99,3 @@ namespace CalculatorEFSOL
 
     }
 }
-
-
